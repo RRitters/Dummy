@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://omg.org" id="Definitions_1">
+  <bpmn:process id="Process_1" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_1" name="Traktor gestartet" />
+    <bpmn:serviceTask id="Activity_1" name="Cassava setzen (0.7 km/h)" />
+    <bpmn:endEvent id="EndEvent_1" name="Feierabend wegen Regen!" />
+  </bpmn:process>
+</bpmn:definitions>
