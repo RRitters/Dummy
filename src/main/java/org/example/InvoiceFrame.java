@@ -8,6 +8,9 @@ public class InvoiceFrame extends JFrame {
     private JButton btnCreateInvoice;
     private JLabel lblStatus;
 
+    // Instanz deines Delegates
+    private DummyDelegate delegate = new DummyDelegate();
+
     public InvoiceFrame() {
         setTitle("Rechnungsverwaltung");
         setSize(400, 150);
@@ -20,34 +23,30 @@ public class InvoiceFrame extends JFrame {
         add(btnCreateInvoice);
         add(lblStatus);
 
-        // Event-Listener verknüpfen
         btnCreateInvoice.addActionListener(this::onCreateInvoiceClicked);
     }
 
     private void onCreateInvoiceClicked(ActionEvent e) {
-        // BREAKPOINT HERE (1): Wenn Sie hier einen Breakpoint setzen, hält die IDE beim Klick an.
-
-        // 1. Text SOFORT anzeigen & Button sperren
+        // BREAKPOINT (1): Hält beim Klick im UI-Thread an
         lblStatus.setText("Rechnung wird erstellt...");
         btnCreateInvoice.setEnabled(false);
 
-        // 2. Erstellung im Hintergrund ausführen
         SwingWorker<Void, Void> worker = new SwingWorker<>() {
             @Override
             protected Void doInBackground() throws Exception {
-                // BREAKPOINT HERE (2): Hält während der Hintergrundarbeit an.
-                erstelleRechnung(); // Zeitintensive Operation (PDF, DB, etc.)
+                // BREAKPOINT (2): Hält im Hintergrund-Thread an
+                // Aufruf der Logik in deinem Delegate
+                delegate.erstelleRechnung();
                 return null;
             }
 
             @Override
             protected void done() {
-                // Wird automatisch wieder im UI-Thread ausgeführt, wenn fertig
                 try {
-                    get(); // Prüft auf Fehler in doInBackground
+                    get(); // Fängt Exceptions ab, falls erstelleRechnung() fehlschlägt
                     lblStatus.setText("Rechnung erfolgreich erstellt!");
                 } catch (Exception ex) {
-                    lblStatus.setText("Fehler bei der Rechnungsstellung.");
+                    lblStatus.setText("Fehler bei der Erstellung.");
                     ex.printStackTrace();
                 } finally {
                     btnCreateInvoice.setEnabled(true);
@@ -55,15 +54,6 @@ public class InvoiceFrame extends JFrame {
             }
         };
 
-        worker.execute(); // Startet den Hintergrundprozess
-    }
-
-    private void erstelleRechnung() throws InterruptedException {
-        // Simulation einer 2-sekündigen Verarbeitung
-        Thread.sleep(2000);
-    }
-
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new InvoiceFrame().setVisible(true));
+        worker.execute();
     }
 }
