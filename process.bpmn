@@ -1,17 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
-             xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
-             id="Definitions_1">
-  <process id="Process_1" isExecutable="true">
-    <startEvent id="StartEvent_1" name="Bestellung eingegangen" />
-    <task id="Task_1" name="Zahlung prüfen" />
-    <task id="Task_2" name="Ware versenden" />
-    <task id="Task_3" name="Rechnung erstellen" camunda:class="org.example.DummyDelegate" />
-    <endEvent id="EndEvent_1" name="Bestellung abgeschlossen" />
+             xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+             targetNamespace="http://www.example.org/bpmn">
 
-    <sequenceFlow id="Flow_1" sourceRef="StartEvent_1" targetRef="Task_1" />
-    <sequenceFlow id="Flow_2" sourceRef="Task_1" targetRef="Task_2" />
-    <sequenceFlow id="Flow_3" sourceRef="Task_2" targetRef="Task_3" />
-    <sequenceFlow id="Flow_4" sourceRef="Task_3" targetRef="EndEvent_1" />
+  <process id="WohngeldAntragProzess" isExecutable="true">
+
+    <!-- 1. Start: Bürger stellt Antrag -->
+    <startEvent id="Start_1" name="Antrag eingegangen" />
+    <sequenceFlow id="f1" sourceRef="Start_1" targetRef="Gateway_Split" />
+
+    <!-- 2. Parallel Gateway: Startet 2 automatische Prüfungen gleichzeitig -->
+    <parallelGateway id="Gateway_Split" name="Parallel-Prüfung" />
+    <sequenceFlow id="f2" sourceRef="Gateway_Split" targetRef="Task_Meldeamt" />
+    <sequenceFlow id="f3" sourceRef="Gateway_Split" targetRef="Task_Finanzamt" />
+
+    <!-- 3. Parallele Service-Tasks (Java Delegates) -->
+    <serviceTask id="Task_Meldeamt" name="Melderegister prüfen" camunda:class="org.example.DummyDelegate" />
+    <serviceTask id="Task_Finanzamt" name="Einkommen prüfen" camunda:class="org.example.DummyDelegate" />
+
+    <sequenceFlow id="f4" sourceRef="Task_Meldeamt" targetRef="Gateway_Join" />
+    <sequenceFlow id="f5" sourceRef="Task_Finanzamt" targetRef="Gateway_Join" />
+
+    <!-- 4. Parallel Gateway: Wartet bis BEIDE Prüfungen fertig sind -->
+    <parallelGateway id="Gateway_Join" name="Zusammenführung" />
+    <sequenceFlow id="f6" sourceRef="Gateway_Join" targetRef="Task_Bescheid" />
+
+    <!-- 5. Finale Auszahlung / Bescheid -->
+    <serviceTask id="Task_Bescheid" name="Bescheid erzeugen" camunda:class="org.example.DummyDelegate" />
+    <sequenceFlow id="f7" sourceRef="Task_Bescheid" targetRef="End_1" />
+
+    <!-- 6. Ende -->
+    <endEvent id="End_1" name="Antrag abgeschlossen" />
+
   </process>
 </definitions>
