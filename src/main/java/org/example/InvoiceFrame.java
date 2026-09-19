@@ -1,5 +1,7 @@
 package org.example;
 
+import org.camunda.bpm.engine.ProcessEngine;
+
 import javax.swing.*;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
@@ -8,10 +10,13 @@ public class InvoiceFrame extends JFrame {
     private JButton btnCreateInvoice;
     private JLabel lblStatus;
 
-    // Instanz deines Delegates
-    private DummyDelegate delegate = new DummyDelegate();
+    // Camunda ProcessEngine als Feld
+    private ProcessEngine processEngine;
 
-    public InvoiceFrame() {
+    // Konstruktor nimmt die ProcessEngine aus Main.java entgegen
+    public InvoiceFrame(ProcessEngine processEngine) {
+        this.processEngine = processEngine;
+
         setTitle("Rechnungsverwaltung");
         setSize(400, 150);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -27,26 +32,26 @@ public class InvoiceFrame extends JFrame {
     }
 
     private void onCreateInvoiceClicked(ActionEvent e) {
-        // BREAKPOINT (1): Hält beim Klick im UI-Thread an
-        lblStatus.setText("Rechnung wird erstellt...");
+        lblStatus.setText("Prozess wird gestartet...");
         btnCreateInvoice.setEnabled(false);
 
         SwingWorker<Void, Void> worker = new SwingWorker<>() {
             @Override
             protected Void doInBackground() throws Exception {
-                // BREAKPOINT (2): Hält im Hintergrund-Thread an
-                // Aufruf der Logik in deinem Delegate
-                delegate.erstelleRechnung();
+                // Camunda startet die Prozessinstanz anhand der ID im BPMN-XML
+                // Falls deine Prozess-ID im BPMN anders heißt, hier anpassen (z. B. "Process_1"):
+                processEngine.getRuntimeService()
+                        .startProcessInstanceByKey("Process_1");
                 return null;
             }
 
             @Override
             protected void done() {
                 try {
-                    get(); // Fängt Exceptions ab, falls erstelleRechnung() fehlschlägt
-                    lblStatus.setText("Rechnung erfolgreich erstellt!");
+                    get(); // Fängt Exceptions ab, falls der Prozess fehlschlägt
+                    lblStatus.setText("Prozess erfolgreich durchgelaufen!");
                 } catch (Exception ex) {
-                    lblStatus.setText("Fehler bei der Erstellung.");
+                    lblStatus.setText("Fehler im Prozessverlauf.");
                     ex.printStackTrace();
                 } finally {
                     btnCreateInvoice.setEnabled(true);

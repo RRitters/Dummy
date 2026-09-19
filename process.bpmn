@@ -1,36 +1,31 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
-             xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
-             targetNamespace="http://www.example.org/bpmn">
-
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" targetNamespace="http://www.example.org/bpmn">
   <process id="WohngeldAntragProzess" isExecutable="true">
-
     <!-- 1. Start: Bürger stellt Antrag -->
-    <startEvent id="Start_1" name="Antrag eingegangen" />
-    <sequenceFlow id="f1" sourceRef="Start_1" targetRef="Gateway_Split" />
-
+    <startEvent id="Start_1" name="Antrag eingegangen"/>
+    <sequenceFlow id="f1" sourceRef="Start_1" targetRef="Gateway_Split"/>
     <!-- 2. Parallel Gateway: Startet 2 automatische Prüfungen gleichzeitig -->
-    <parallelGateway id="Gateway_Split" name="Parallel-Prüfung" />
-    <sequenceFlow id="f2" sourceRef="Gateway_Split" targetRef="Task_Meldeamt" />
-    <sequenceFlow id="f3" sourceRef="Gateway_Split" targetRef="Task_Finanzamt" />
-
+    <parallelGateway id="Gateway_Split" name="Parallel-Prüfung"/>
+    <sequenceFlow id="f2" sourceRef="Gateway_Split" targetRef="Task_Meldeamt"/>
+    <sequenceFlow id="f3" sourceRef="Gateway_Split" targetRef="Task_Finanzamt"/>
     <!-- 3. Parallele Service-Tasks (Java Delegates) -->
-    <serviceTask id="Task_Meldeamt" name="Melderegister prüfen" camunda:class="org.example.DummyDelegate" />
-    <serviceTask id="Task_Finanzamt" name="Einkommen prüfen" camunda:class="org.example.DummyDelegate" />
-
-    <sequenceFlow id="f4" sourceRef="Task_Meldeamt" targetRef="Gateway_Join" />
-    <sequenceFlow id="f5" sourceRef="Task_Finanzamt" targetRef="Gateway_Join" />
-
+    <serviceTask camunda:class="org.example.DummyDelegate" id="Task_Meldeamt" name="Melderegister prüfen"/>
+    <serviceTask camunda:class="org.example.DummyDelegate" id="Task_Finanzamt" name="Einkommen prüfen"/>
+    <sequenceFlow id="f4" sourceRef="Task_Meldeamt" targetRef="Gateway_Join"/>
+    <sequenceFlow id="f5" sourceRef="Task_Finanzamt" targetRef="Gateway_Join"/>
     <!-- 4. Parallel Gateway: Wartet bis BEIDE Prüfungen fertig sind -->
-    <parallelGateway id="Gateway_Join" name="Zusammenführung" />
-    <sequenceFlow id="f6" sourceRef="Gateway_Join" targetRef="Task_Bescheid" />
-
+    <parallelGateway id="Gateway_Join" name="Zusammenführung"/>
+    <sequenceFlow id="f6" sourceRef="Gateway_Join" targetRef="Task_Bescheid"/>
     <!-- 5. Finale Auszahlung / Bescheid -->
-    <serviceTask id="Task_Bescheid" name="Bescheid erzeugen" camunda:class="org.example.DummyDelegate" />
-    <sequenceFlow id="f7" sourceRef="Task_Bescheid" targetRef="End_1" />
-
+    <serviceTask camunda:class="org.example.DummyDelegate" id="Task_Bescheid" name="Bescheid erzeugen"/>
+    <sequenceFlow id="f7" sourceRef="Task_Bescheid" targetRef="End_1"/>
     <!-- 6. Ende -->
-    <endEvent id="End_1" name="Antrag abgeschlossen" />
-
+    <endEvent id="End_1" name="Antrag abgeschlossen"/>
+    <serviceTask c="org.example.DummyDelegate" id="Task_5175" name="Mein Service Task"/>
+    <sequenceFlow id="f_5226" sourceRef="Task_5175" targetRef="Gateway_Join"/>
+    <sequenceFlow id="f_7721" sourceRef="Gateway_Split" targetRef="Task_5175"/>
+    <serviceTask id="Task_156439" name="Gemini macht es möglich!  serviceTask"/>
+    <sequenceFlow id="f_6412" sourceRef="Task_156439" targetRef="Gateway_Join"/>
+    <sequenceFlow id="f_2408" sourceRef="Gateway_Split" targetRef="Task_156439"/>
+    
   </process>
 </definitions>
